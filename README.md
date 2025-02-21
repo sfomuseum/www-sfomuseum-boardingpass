@@ -1,6 +1,6 @@
 # www-sfomuseum-boardingpass
 
-Demonstration website to marry WebAssembly binaries from the [sfomuseum/rs-rxing-wasm](https://github.com/sfomuseum/rs-rxing-wasm) and [sfomuseum/go-bcbp-wasm](https://github.com/sfomuseum/go-bcbp-wasm) packages to decode and parse boarding pass barcodes.
+Demonstration website to test WebAssembly binaries from the [sfomuseum/rs-rxing-wasm](https://github.com/sfomuseum/rs-rxing-wasm) and [sfomuseum/go-bcbp-wasm](https://github.com/sfomuseum/go-bcbp-wasm) packages to decode and parse boarding pass barcodes.
 
 ## Example
 
