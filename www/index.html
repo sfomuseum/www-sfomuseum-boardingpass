@@ -1,0 +1,140 @@
+<html>
+    <head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<title>SFO Museum Boarding Pass Scanner</title>
+	<script src="javascript/wasm_exec.js"></script>
+	<script src="javascript/sfomuseum.wasm.js"></script>	
+	<link rel="stylesheet" type="text/css" href="css/index.css" />
+	
+    </head>
+    <body>
+	<div id="scanner">
+		<form>
+		    <input type="file" id="barcode" disabled="disabled" />
+		    <button type="submit" id="submit" disabled="disabled">Scan</button>
+		</form>
+	</div>
+	
+	<div id="grid">
+	    <div class="grid">
+		<div id="image"></div>
+	    </div>
+	    <div class="grid">
+		<div id="raw"></div>
+		<div id="parsed"></div>		
+	    </div>
+	</div>
+    </body>
+    <script type="module">
+
+     import init, { convert_js_image_to_luma, decode_barcode } from './javascript/rxing_wasm.js';
+     await init();
+     
+     async function main() {
+
+	 var barcode_el = document.getElementById("barcode");	    
+	 var submit_el = document.getElementById("submit");
+
+	 var image_el = document.getElementById("image");
+	 var raw_el = document.getElementById("raw");
+	 var parsed_el = document.getElementById("parsed");
+	 
+	 barcode_el.removeAttribute("disabled");	    
+	 submit_el.removeAttribute("disabled");
+	 
+	 submit_el.onclick = function(e){
+
+	     image_el.innerHTML = "";
+	     raw_el.innerHTML = "";
+	     parsed_el.innerHTML = "";
+	     
+	     var file = barcode_el.files[0];         
+	     var url = URL.createObjectURL(file);    
+	     var img = new Image();                  
+	     
+	     img.onload = function() {
+		 
+		 URL.revokeObjectURL(this.src);      
+		 
+		 let w = this.width;
+		 let h = this.height;
+		 
+		 let canvas = document.createElement("canvas");
+		 let context = canvas.getContext("2d");
+		 
+		 // This is important for 2D barcoded
+		 // https://github.com/rxing-core/rxing-wasm/issues/6
+		 // A side-effect of this is that it's not yet possible
+		 // to assign a fixed size for the barcode <img> element.
+  	         // It ought to be possible but I haven't figure it out yet...
+		 canvas.width = w;
+		 canvas.height = h;
+		 
+		 context.drawImage(img, 0, 0);
+		 
+		 let data = context.getImageData(0, 0, w, h).data;
+		 let luma8Data = convert_js_image_to_luma(data);
+		 
+		 let parsedBarcode = decode_barcode(luma8Data, w, h, true);
+		 let bcbp_str = parsedBarcode.text();
+		 
+		 var pre = document.createElement("pre");
+		 pre.setAttribute("style", "border:solid thin; padding: .5rem;");
+		 pre.innerText = bcbp_str;
+		 
+		 raw_el.appendChild(pre);
+
+		 // Parse BCBP data
+		 console.log("Parse BCBP '" + bcbp_str + "'");
+		 
+		 parse_bcbp(bcbp_str).then(rsp => {
+
+		     var bcbp_data;
+		     
+		     try {
+			 bcbp_data = JSON.parse(rsp)
+		     } catch(e){
+			 result_el.innerText = "Unable to parse your BCBP string: " + e;
+			 
+			 result_el.style.display = "block";
+			 return;
+		     }
+		     
+		     var bcbp_json = JSON.stringify(bcbp_data, '', 2);
+
+		     var pre = document.createElement("pre");
+		     pre.appendChild(document.createTextNode(bcbp_json));
+
+		     parsed_el.appendChild(pre);
+		     
+		 }).catch(err => {
+		     
+		     console.error("Failed to parse BCBP string ", err);
+		     
+		     // result_el.innerText = "There was a problem parsing your BCBP string:" + err;
+		     // result_el.style.display = "block";    	
+		 });
+		 
+	     };
+	     
+	     img.src = url;
+	     
+	     image_el.appendChild(img);
+	     return false;
+	 };
+     }
+
+     // Go
+     
+     sfomuseum.wasm.fetch("javascript/parse_bcbp.wasm").then(rsp => {
+
+         main();
+
+     }).catch(err => {
+	console.error("Failed to initialize parse_bcbp.wasm", err)
+     });
+     
+    </script>
+</html>
