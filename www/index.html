@@ -66,9 +66,8 @@
 		 
 		 // This is important for 2D barcoded
 		 // https://github.com/rxing-core/rxing-wasm/issues/6
-		 // A side-effect of this is that it's not yet possible
-		 // to assign a fixed size for the barcode <img> element.
-  	         // It ought to be possible but I haven't figure it out yet...
+		 // The size of the final image (rendered in the
+		 // browser) is assigned below.
 		 canvas.width = w;
 		 canvas.height = h;
 		 
@@ -76,6 +75,9 @@
 		 
 		 let data = context.getImageData(0, 0, w, h).data;
 		 let luma8Data = convert_js_image_to_luma(data);
+
+		 // See notes above
+		 this.setAttribute("style", "max-width: 300px");
 		 
 		 let parsedBarcode = decode_barcode(luma8Data, w, h, true);
 		 let bcbp_str = parsedBarcode.text();
