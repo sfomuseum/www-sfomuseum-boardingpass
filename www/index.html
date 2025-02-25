@@ -21,8 +21,10 @@
 	    <div class="grid">
 		<div id="image"></div>
 	    </div>
-	    <div class="grid">
+	    <div class="grid" id="results">
+		<label for="raw"><code>rxing_wasm_bg.wasm</code> (<a href="https://github.com/sfomuseum/rs-rxing-wasm" target="github">source</a>)</label>
 		<div id="raw"></div>
+		<label for="parsed"><code>parse_bcbp.wasm</code> (<a href="https://github.com/sfomuseum/go-bcbp-wasm" target="github">source</a>)</label>
 		<div id="parsed"></div>		
 	    </div>
 	</div>
@@ -39,7 +41,8 @@
 
 	 var image_el = document.getElementById("image");
 	 var raw_el = document.getElementById("raw");
-	 var parsed_el = document.getElementById("parsed");
+	 var parsed_el = document.getElementById("parsed");	 
+	 var results_el = document.getElementById("results");
 	 
 	 barcode_el.removeAttribute("disabled");	    
 	 submit_el.removeAttribute("disabled");
@@ -49,12 +52,16 @@
 	     image_el.innerHTML = "";
 	     raw_el.innerHTML = "";
 	     parsed_el.innerHTML = "";
+
+	     results_el.style.display = "none";
 	     
 	     var file = barcode_el.files[0];         
 	     var url = URL.createObjectURL(file);    
 	     var img = new Image();                  
 	     
 	     img.onload = function() {
+
+		 results_el.style.display = "block";
 		 
 		 URL.revokeObjectURL(this.src);      
 		 

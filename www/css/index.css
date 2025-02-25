@@ -1,9 +1,13 @@
+code {
+	color: #8B0000;
+}
+
 #grid {
     display: grid;
     grid-template-columns:1fr 1fr;
     gap: 10px 10px;
 }
 
-#image img {
-	// max-height: 300px;
+#results {
+	display:none;
 }
